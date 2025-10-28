@@ -1,0 +1,53 @@
+<Project>
+  <!-- Auto-import vào TẤT CẢ projects trong Runner/ và subfolders -->
+  
+  <Target Name="CopyPluginToDarkRift" AfterTargets="Build">
+    <!-- Define deploy paths -->
+    <PropertyGroup>
+      <DeployPluginsPath>$(MSBuildThisFileDirectory)..\Deploy Server\Plugins\</DeployPluginsPath>
+      <DeployServerRoot>$(MSBuildThisFileDirectory)..\Deploy Server\</DeployServerRoot>
+    </PropertyGroup>
+    
+    <!-- Create folders if not exist -->
+    <MakeDir Directories="$(DeployPluginsPath)" Condition="!Exists('$(DeployPluginsPath)')" />
+    <MakeDir Directories="$(DeployServerRoot)" Condition="!Exists('$(DeployServerRoot)')" />
+    
+    <!-- Copy DLL -->
+    <Copy SourceFiles="$(TargetPath)" 
+          DestinationFolder="$(DeployPluginsPath)" 
+          SkipUnchangedFiles="true" />
+    
+    <!-- Copy PDB in Debug mode -->
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" 
+          DestinationFolder="$(DeployPluginsPath)" 
+          SkipUnchangedFiles="true"
+          Condition="'$(Configuration)' == 'Debug' AND Exists('$(TargetDir)$(TargetName).pdb')" />
+    
+    <!-- Copy log4net.config if exists in project root -->
+    <Copy SourceFiles="$(ProjectDir)log4net.config" 
+          DestinationFolder="$(DeployServerRoot)" 
+          SkipUnchangedFiles="true"
+          Condition="Exists('$(ProjectDir)log4net.config')" />
+    
+    <!-- Copy all .config files from project root (App.config, etc.) -->
+    <ItemGroup>
+      <ConfigFiles Include="$(ProjectDir)*.config" Exclude="$(ProjectDir)packages.config" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ConfigFiles)" 
+          DestinationFolder="$(DeployServerRoot)" 
+          SkipUnchangedFiles="true"
+          Condition="'@(ConfigFiles)' != ''" />
+    
+    <!-- Copy all referenced DLLs (log4net.dll, etc.) -->
+    <Copy SourceFiles="@(ReferenceCopyLocalPaths)" 
+          DestinationFolder="$(DeployPluginsPath)" 
+          SkipUnchangedFiles="true"
+          Condition="'$(CopyLocalLockFileAssemblies)' != 'false'" />
+    
+    <!-- Log messages -->
+    <Message Text="[$(ProjectName)] → DLL copied to Plugins\" Importance="high" />
+    <Message Text="[$(ProjectName)] → Config files copied to Deploy Server\" Importance="high" 
+             Condition="Exists('$(ProjectDir)log4net.config')" />
+  </Target>
+  
+</Project>
