@@ -1,9 +1,9 @@
-﻿using Common;
-using DarkRift.Server;
+﻿using DarkRift.Server;
 using log4net;
-using log4net.Core;
+using PZC.Concurrency;
+using PZC.Log4Net;
 using System;
-using log4net.Config;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,21 +20,24 @@ namespace DR_Sever
         // Static log4net logger cho class này
         private static readonly ILog LOG = LogManager.GetLogger(typeof(Application));
 
+      //  private readonly ConcurrentDictionary<int, int> _roleBots = [];
+
+
         public Application(PluginLoadData pluginLoadData) : base(pluginLoadData)
         {
-            // Initialize log4net
-            LogGame.Initialize();
+            PZC.Log.LogManager.Initialize(new Log4NetFactory());
 
             // Dùng DarkRift built-in logger
-            Logger.Info("=== DarkRift Server Plugin Loading ===");
-            Logger.Info($"Plugin Version: {Version}");
+            LOG.Info("=== DarkRift Server Plugin Loading ===");
+            LOG.Info($"Plugin Version: {Version}");
 
-            // Dùng log4net custom logger
-            LOG.Info("log4net initialized successfully!");
 
             // Register events
             ClientManager.ClientConnected += OnClientConnected;
             ClientManager.ClientDisconnected += OnClientDisConnected;
+
+
+
 
         }
 
@@ -43,11 +46,9 @@ namespace DR_Sever
             e.Client.MessageReceived -= OnMessageReceived;
 
             // DarkRift logger
-            Logger.Info($"Client {e.Client.ID} disconnected");
+            LOG.Info($"Client {e.Client.ID} disconnected");
 
             // log4net với màu sắc
-            LogGame.ClientDisconnected(e.Client.ID, "User disconnected");
-            LogGame.Debug($"Active clients: {ClientManager.Count}");
         }
 
         private void OnClientConnected(object sender, ClientConnectedEventArgs e)
@@ -55,8 +56,6 @@ namespace DR_Sever
             e.Client.MessageReceived += OnMessageReceived;
 
             // Get client IP
-
-            LogGame.Debug($"Active clients: {ClientManager.Count}");
 
         }
 
@@ -75,7 +74,7 @@ namespace DR_Sever
             catch (Exception ex)
             {
                 // Log errors bằng cả 2
-                Logger.Error($"Error processing message from Client {e.Client.ID}", ex);
+                LOG.Error($"Error processing message from Client {e.Client.ID}", ex);
             }
         }
     }
