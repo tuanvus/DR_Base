@@ -1,6 +1,5 @@
 ﻿using DarkRift.Server;
 using log4net;
-using PZC.Concurrency;
 using PZC.Log4Net;
 using System;
 using System.Collections.Concurrent;
@@ -15,7 +14,7 @@ namespace DR_Sever
     public class Application : Plugin
     {
         public override bool ThreadSafe => true;
-        public override Version Version => new Version(1, 0, 0);
+        public override Version Version => new Version(1, 0, 1);
 
         // Static log4net logger cho class này
         private static readonly ILog LOG = LogManager.GetLogger(typeof(Application));

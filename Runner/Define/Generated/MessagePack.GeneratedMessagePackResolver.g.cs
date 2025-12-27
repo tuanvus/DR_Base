@@ -39,10 +39,11 @@ partial class GeneratedMessagePackResolver : MsgPack::IFormatterResolver
 
 	private static class GeneratedMessagePackResolverGetFormatterHelper
 	{
-		private static readonly global::System.Collections.Generic.Dictionary<global::System.Type, int> closedTypeLookup = new global::System.Collections.Generic.Dictionary<global::System.Type, int>(2)
+		private static readonly global::System.Collections.Generic.Dictionary<global::System.Type, int> closedTypeLookup = new global::System.Collections.Generic.Dictionary<global::System.Type, int>(3)
 		{
 			{ typeof(global::Define.UserLogin), 0 },
 			{ typeof(global::Define.UserLoginResponse), 1 },
+			{ typeof(global::DR.Define.Dmge), 2 },
 		};
 
 		internal static object GetFormatter(global::System.Type t)
@@ -53,6 +54,7 @@ partial class GeneratedMessagePackResolver : MsgPack::IFormatterResolver
 				{
 					case 0: return new global::MessagePack.GeneratedMessagePackResolver.Define.UserLoginFormatter();
 					case 1: return new global::MessagePack.GeneratedMessagePackResolver.Define.UserLoginResponseFormatter();
+					case 2: return new global::MessagePack.GeneratedMessagePackResolver.DR.Define.DmgeFormatter();
 					default: return null; // unreachable
 				};
 			}
