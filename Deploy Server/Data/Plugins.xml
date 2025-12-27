@@ -11,5 +11,5 @@
   <plugin id="8" name="ClearCommand" version="1.0.0" />
   <plugin id="9" name="ObjectCacheMonitor" version="1.0.0" />
   <plugin id="10" name="HttpHealthCheck" version="1.0.0" />
-  <plugin id="11" name="Application" version="1.0.0" />
+  <plugin id="11" name="Application" version="1.0.1" />
 </plugins>
