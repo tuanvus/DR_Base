@@ -1,13 +1,11 @@
-﻿using DarkRift.Server;
-using log4net;
+using DarkRift;
+using DarkRift.Server;
+using DR.Common.Networking;
+using DR.Common.OperationHandler;
+using DR.Common.Serialization;
+using MessagePack;
 using PZC.Log4Net;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace DR_Sever
 {
@@ -16,64 +14,118 @@ namespace DR_Sever
         public override bool ThreadSafe => true;
         public override Version Version => new Version(1, 0, 1);
 
-        // Static log4net logger cho class này
-        private static readonly ILog LOG = LogManager.GetLogger(typeof(Application));
-
-      //  private readonly ConcurrentDictionary<int, int> _roleBots = [];
-
+        private readonly OperationHandlerRegistry _handlerRegistry;
+        private readonly PacketProcessor _packetProcessor;
 
         public Application(PluginLoadData pluginLoadData) : base(pluginLoadData)
         {
+            _handlerRegistry = new OperationHandlerRegistry();
+            _packetProcessor = new PacketProcessor(_handlerRegistry);
+
             PZC.Log.LogManager.Initialize(new Log4NetFactory());
+            ApplicationLogger.Initialize();
 
-            // Dùng DarkRift built-in logger
-            LOG.Info("=== DarkRift Server Plugin Loading ===");
-            LOG.Info($"Plugin Version: {Version}");
+            ApplicationLogger.Info("=== DarkRift Server Plugin Loading ===");
+            ApplicationLogger.Info($"Plugin Version: {Version}");
 
+            RegisterOperationHandlers();
 
-            // Register events
             ClientManager.ClientConnected += OnClientConnected;
             ClientManager.ClientDisconnected += OnClientDisConnected;
-
-
-
-
         }
 
-        private void OnClientDisConnected(object sender, ClientDisconnectedEventArgs e)
+        private void RegisterOperationHandlers()
         {
-            e.Client.MessageReceived -= OnMessageReceived;
-
-            // DarkRift logger
-            LOG.Info($"Client {e.Client.ID} disconnected");
-
-            // log4net với màu sắc
+            _handlerRegistry.RegisterHandlers(GetType().Assembly);
+            _handlerRegistry.PrintRegisteredHandlers();
         }
 
         private void OnClientConnected(object sender, ClientConnectedEventArgs e)
         {
-            e.Client.MessageReceived += OnMessageReceived;
+            var clientPeer = ClientPeerManager.Instance.AddPeer(e.Client);
+            clientPeer.Peer.MessageReceived += OnPeerMessageReceived;
 
-            // Get client IP
+            ApplicationLogger.Info($"Client {e.Client.ID} connected (ClientPeer wrapping pooled DRPeer). Total active: ???");
 
+            // Demo: Gửi snapshot ngay khi client connect (tag 20001)
+            SendSnapshotDemo(clientPeer.Peer);
         }
 
-        private void OnMessageReceived(object sender, MessageReceivedEventArgs e)
+        private void SendSnapshotDemo(DRPeer peer)
         {
+            if (peer == null) return;
+
+            var snapshot = new DemoPingResponse
+            {
+                Success = true,
+                Reply = "Hello from server snapshot!",
+                ServerTicksUtc = DateTime.UtcNow.Ticks
+            };
+
+            byte[] payload = MessagePackSerializer.Serialize(snapshot, MessagePack.Resolvers.ContractlessStandardResolver.Options);
+            peer.SendMessagePack(20001, payload);
+            ApplicationLogger.Info($"Sent SnapshotDemo to client {peer.Id}");
+        }
+
+        private void OnClientDisConnected(object sender, ClientDisconnectedEventArgs e)
+        {
+            ApplicationLogger.Info($"Client {e.Client.ID} disconnected");
+            var peer = ClientPeerManager.Instance.GetDRPeer(e.Client.ID);
+            if (peer != null)
+            {
+                peer.MessageReceived -= OnPeerMessageReceived;
+            }
+
+            ClientPeerManager.Instance.RemovePeer(e.Client.ID);
+        }
+
+        private void OnPeerMessageReceived(DRPeer peer, Message message)
+        {
+            ApplicationLogger.Info($"Received message from client {peer.Id}, tag={message.Tag}");
+            ProcessIncomingMessage(peer, message);
+        }
+
+        private void ProcessIncomingMessage(DRPeer peer, Message message)
+        {
+            if (peer == null)
+            {
+                ApplicationLogger.Warn($"Could not resolve DRPeer for incoming tag={message.Tag}");
+                return;
+            }
+
+            if (!_handlerRegistry.TryGetHandler(message.Tag, out var handler))
+            {
+                ApplicationLogger.Warn($"No operation handler registered for tag={message.Tag}");
+                return;
+            }
+
+            var requestType = ApplicationUtility.GetRequestType(handler.GetType());
+            if (requestType == null)
+            {
+                ApplicationLogger.Warn($"Could not infer request type for handler {handler.GetType().FullName}");
+                return;
+            }
+
             try
             {
-                using (var message = e.GetMessage())
+                using (var reader = message.GetReader())
                 {
-                    // Log message received
+                    int payloadLength = reader.ReadInt32();
+                    byte[] payload = reader.ReadBytes();
+                    object requestData = MessagePackDtoSerializer.Instance.Deserialize(requestType, payload, 0, payloadLength, contractless: true);
+                    ApplicationLogger.Info($"Client {peer.Id} -> Server tag={message.Tag}, payload={ApplicationUtility.FormatPayload(requestData)}");
 
-                    // Your message handling logic here
-                    // ...
+                    object response = _packetProcessor.ProcessPacket(peer, message.Tag, requestData);
+                    if (peer != null && response != null)
+                    {
+                        ApplicationLogger.Info($"Server -> Client {peer.Id} tag={message.Tag}, payload={ApplicationUtility.FormatPayload(response)}");
+                        peer.SendMessagePackResponse(message.Tag, response);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                // Log errors bằng cả 2
-                LOG.Error($"Error processing message from Client {e.Client.ID}", ex);
+                ApplicationLogger.Error($"Failed to process client {peer.Id} message tag={message.Tag}", ex);
             }
         }
     }

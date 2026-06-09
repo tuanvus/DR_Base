@@ -1,5 +1,5 @@
 ﻿using DarkRift;
-using DR_Sever.Serialization;
+using DR.Common.Serialization;
 using MessagePack;
 using System;
 using System.Collections.Generic;

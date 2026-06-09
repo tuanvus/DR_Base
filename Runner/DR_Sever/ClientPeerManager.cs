@@ -1,12 +1,7 @@
 ﻿using DarkRift.Server;
 using DarkRift;
-using DR_Sever;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DR_Sever
 {
@@ -15,38 +10,54 @@ namespace DR_Sever
         private static ClientPeerManager instance;
         public static ClientPeerManager Instance => instance ?? (instance = new ClientPeerManager());
 
-        private ConcurrentDictionary<ushort, ClientPeer> peers;
+        private readonly ConcurrentDictionary<ushort, ClientPeer> _peers 
+            = new ConcurrentDictionary<ushort, ClientPeer>();
 
-        private ClientPeerManager()
-        {
-            peers = new ConcurrentDictionary<ushort, ClientPeer>();
-        }
+        private ClientPeerManager() { }
 
-        public void AddPeer(IClient client)
+        public ClientPeer AddPeer(IClient client)
         {
-            var peer = new ClientPeer(client);
-            peers.TryAdd(client.ID, peer);
+            var drPeer = DR.Common.Networking.DRPeerPool.Instance.Rent(client);
+
+            var clientPeer = new ClientPeer(drPeer);
+
+            _peers.TryAdd(client.ID, clientPeer);
+            return clientPeer;
         }
 
         public void RemovePeer(ushort clientId)
         {
-            if (peers.TryRemove(clientId, out ClientPeer peer))
+            if (_peers.TryRemove(clientId, out var clientPeer))
             {
-                peer.Disconnect();
+                var drPeer = clientPeer.Peer;
+
+                // TODO: Notify the player's current room via its Fiber
+                // e.g. clientPeer.Peer.Tag as ... or keep room ref on ClientPeer
+                // drPeer.CurrentRoom?.Enqueue(() => room.OnPlayerLeft(clientPeer));
+
+                clientPeer.Disconnect();
+
+                // Return the underlying DRPeer to the pool
+                DR.Common.Networking.DRPeerPool.Instance.Return(drPeer);
             }
         }
 
         public ClientPeer GetPeer(ushort clientId)
         {
-            peers.TryGetValue(clientId, out ClientPeer peer);
-            return peer;
+            _peers.TryGetValue(clientId, out var clientPeer);
+            return clientPeer;
+        }
+        public DR.Common.Networking.DRPeer GetDRPeer(ushort clientId)
+        {
+            var cp = GetPeer(clientId);
+            return cp?.Peer;
         }
 
-        public void BroadcastMessage<T>(ushort tag, T data, SendMode mode) where T : IDarkRiftSerializable
+        public void Broadcast<T>(ushort tag, T data, SendMode mode = SendMode.Reliable) where T : IDarkRiftSerializable
         {
-            foreach (var peer in peers.Values)
+            foreach (var clientPeer in _peers.Values)
             {
-                peer.SendMessage(tag, data, mode);
+                clientPeer.SendMessage(tag, data, mode);
             }
         }
     }

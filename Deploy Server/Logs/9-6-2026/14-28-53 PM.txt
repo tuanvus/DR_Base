@@ -1,0 +1,44 @@
+[Trace]   DarkRiftServer        System Details:
+                                	OS: Microsoft Windows NT 6.2.9200.0
+                                	CLS Version: 4.0.30319.42000
+                                	DarkRift: 2.10.1.0 - Free
+[Trace]   PluginFactory         Created plugin 'Application'.
+[Info]    PluginManager         Loaded plugin Application version 1.0.1
+[Trace]   PluginFactory         Created plugin 'BichannelListener'.
+[Trace]   HttpHealthCheck       HTTP health check started at 'http://localhost:10666/health'
+[Trace]   DarkRiftServer        Binding listeners to ClientManager as server is externally visible.
+[Trace]   DefaultNetworkListener Starting bichannel listener.
+[Info]    DefaultNetworkListener Server mounted, listening on port 4296.
+[Trace]   DefaultNetworkListener Accepted TCP connection from 127.0.0.1:59259.
+[Trace]   DefaultNetworkListener Accepted UDP connection from 127.0.0.1:63646.
+[Info]    ClientManager         New client [0] connected [127.0.0.1:59259|127.0.0.1:63646].
+[Error]   ClientManager         A plugin encountered an error whilst handling the ClientConnected event. The client will be disconnected. (See logs for exception)
+                                 MessagePack.MessagePackSerializationException: Failed to serialize DR.Define.DemoPingResponse value. ---> System.TypeInitializationException: The type initializer for 'FormatterCache`1' threw an exception. ---> System.TypeInitializationException: The type initializer for 'FormatterCache`1' threw an exception. ---> System.IO.FileLoadException: Could not load file or assembly 'MessagePack.Annotations, Version=2.5.0.0, Culture=neutral, PublicKeyToken=b4a0369545f0a1be' or one of its dependencies. The located assembly's manifest definition does not match the assembly reference. (Exception from HRESULT: 0x80131040)
+                                    at System.ModuleHandle.ResolveType(RuntimeModule module, Int32 typeToken, IntPtr* typeInstArgs, Int32 typeInstCount, IntPtr* methodInstArgs, Int32 methodInstCount, ObjectHandleOnStack type)
+                                    at System.ModuleHandle.ResolveTypeHandleInternal(RuntimeModule module, Int32 typeToken, RuntimeTypeHandle[] typeInstantiationContext, RuntimeTypeHandle[] methodInstantiationContext)
+                                    at System.Reflection.RuntimeModule.ResolveType(Int32 metadataToken, Type[] genericTypeArguments, Type[] genericMethodArguments)
+                                    at System.Reflection.CustomAttribute.FilterCustomAttributeRecord(CustomAttributeRecord caRecord, MetadataImport scope, Assembly& lastAptcaOkAssembly, RuntimeModule decoratedModule, MetadataToken decoratedToken, RuntimeType attributeFilterType, Boolean mustBeInheritable, Object[] attributes, IList derivedAttributes, RuntimeType& attributeType, IRuntimeMethodInfo& ctor, Boolean& ctorHasParameters, Boolean& isVarArg)
+                                    at System.Reflection.CustomAttribute.GetCustomAttributes(RuntimeModule decoratedModule, Int32 decoratedMetadataToken, Int32 pcaCount, RuntimeType attributeFilterType, Boolean mustBeInheritable, IList derivedAttributes, Boolean isDecoratedTargetSecurityTransparent)
+                                    at System.Reflection.CustomAttribute.GetCustomAttributes(RuntimeType type, RuntimeType caType, Boolean inherit)
+                                    at System.Attribute.GetCustomAttributes(MemberInfo element, Type type, Boolean inherit)
+                                    at System.Attribute.GetCustomAttribute(MemberInfo element, Type attributeType, Boolean inherit)
+                                    at System.Reflection.CustomAttributeExtensions.GetCustomAttribute[T](MemberInfo element)
+                                    at MessagePack.Resolvers.AttributeFormatterResolver.FormatterCache`1..cctor()
+                                    --- End of inner exception stack trace ---
+                                    at MessagePack.Resolvers.AttributeFormatterResolver.GetFormatter[T]()
+                                    at MessagePack.Resolvers.StandardResolver.FormatterCache`1..cctor()
+                                    --- End of inner exception stack trace ---
+                                    at MessagePack.Resolvers.StandardResolver.GetFormatter[T]()
+                                    at MessagePack.Resolvers.StaticCompositeResolver.Cache`1..cctor()
+                                 --- End of stack trace from previous location where exception was thrown ---
+                                    at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+                                    at MessagePack.FormatterResolverExtensions.Throw(TypeInitializationException ex)
+                                    at MessagePack.FormatterResolverExtensions.GetFormatterWithVerify[T](IFormatterResolver resolver)
+                                    at MessagePack.MessagePackSerializer.Serialize[T](MessagePackWriter& writer, T value, MessagePackSerializerOptions options)
+                                    --- End of inner exception stack trace ---
+                                    at MessagePack.MessagePackSerializer.Serialize[T](MessagePackWriter& writer, T value, MessagePackSerializerOptions options)
+                                    at MessagePack.MessagePackSerializer.Serialize[T](T value, MessagePackSerializerOptions options, CancellationToken cancellationToken)
+                                    at DR.Common.Serialization.MessagePackDtoSerializer.Serialize[T](T data) in C:\Users\ADMIN\Downloads\Telegram Desktop\DR_Base\DR_Base\Runner\Common\Serialization\MessagePackDtoSerializer.cs:line 37
+                                    at DR_Sever.Application.SendSnapshotDemo(DRPeer peer) in C:\Users\ADMIN\Downloads\Telegram Desktop\DR_Base\DR_Base\Runner\DR_Sever\Application.cs:line 64
+                                    at DR_Sever.Application.OnClientConnected(Object sender, ClientConnectedEventArgs e) in C:\Users\ADMIN\Downloads\Telegram Desktop\DR_Base\DR_Base\Runner\DR_Sever\Application.cs:line 50
+                                    at DarkRift.Server.ClientManager.<>c__DisplayClass36_0.<HandleNewConnection>b__0()

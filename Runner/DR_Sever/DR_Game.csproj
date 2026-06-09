@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <IsDarkRiftPluginProject>true</IsDarkRiftPluginProject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="DarkRift">
       <HintPath>..\..\Deploy Server\Lib\DarkRift.dll</HintPath>
@@ -95,11 +98,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Application.cs" />
+    <Compile Include="ApplicationLogger.cs" />
+    <Compile Include="ApplicationUtility.cs" />
     <Compile Include="ClientPeer.cs" />
     <Compile Include="ClientPeerManager.cs" />
+    <Compile Include="DemoPingHandler.cs" />
     <Compile Include="Serialization\MessagePackExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Serialization\MessagePackDtoSerializer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -112,6 +117,10 @@
     <ProjectReference Include="..\Common\DR.Common.csproj">
       <Project>{a1b502a1-f06a-4429-a961-f85f1b6dd3d0}</Project>
       <Name>DR.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Define\DR.Define.csproj">
+      <Project>{f0b77752-4edf-8d34-ba05-84b96af97d5a}</Project>
+      <Name>DR.Define</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
