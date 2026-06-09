@@ -4,16 +4,26 @@ using MessagePack.Resolvers;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
-using System.Threading.Tasks;
 using DarkRift;
 
 namespace DR_TestClient.Network
 {
+    /// <summary>
+    /// Gửi operation request và nhận response qua **callback duy nhất**.
+    /// 
+    /// Chỉ dùng 1 callback (Action&lt;TResponse&gt;). 
+    /// Không có onError riêng vì response DTO của bạn đã chứa mã code + data bên trong.
+    /// 
+    /// - Thành công: callback được gọi với data thật.
+    /// - Timeout / lỗi: callback vẫn được gọi với default(TResponse) (thường là null).
+    ///   Bạn tự kiểm tra mã code / null / error data bên trong callback.
+    /// 
+    /// Lưu ý: hiện đang key theo tag (opcode) nên chỉ 1 request pending cho cùng tag tại 1 thời điểm.
+    /// </summary>
     public class ClientOperationClient
     {
         private readonly DarkRiftClient _client;
-        private readonly ConcurrentDictionary<ushort, TaskCompletionSource<object>> _pending = new ConcurrentDictionary<ushort, TaskCompletionSource<object>>();
-        private readonly ConcurrentDictionary<ushort, Type> _responseTypes = new ConcurrentDictionary<ushort, Type>();
+        private readonly ConcurrentDictionary<ushort, IPending> _pendings = new ConcurrentDictionary<ushort, IPending>();
 
         public ClientOperationClient(DarkRiftClient client)
         {
@@ -21,13 +31,28 @@ namespace DR_TestClient.Network
             _client.MessageReceived += OnMessageReceived;
         }
 
-        public async Task<TResponse> SendAsync<TRequest, TResponse>(ushort tag, TRequest request, int timeoutMs = 15000)
+        /// <summary>
+        /// Bắn request, nhận kết quả qua callback (chỉ 1 callback).
+        /// Callback sẽ luôn được gọi đúng 1 lần.
+        /// </summary>
+        public void SendAsync<TRequest, TResponse>(
+            ushort tag,
+            TRequest request,
+            Action<TResponse> callback,
+            int timeoutMs = 15000)
         {
-            var tcs = new TaskCompletionSource<object>();
-            if (!_pending.TryAdd(tag, tcs))
-                throw new InvalidOperationException($"Operation {tag} already pending.");
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
 
-            _responseTypes[tag] = typeof(TResponse);
+            var pending = new Pending<TResponse> { Callback = callback };
+
+            // Cùng tag thì thay thế callback cũ (last wins - tiện cho test)
+            if (!_pendings.TryAdd(tag, pending))
+            {
+                if (_pendings.TryRemove(tag, out var old))
+                    old.CancelTimeout();
+                _pendings[tag] = pending;
+            }
 
             try
             {
@@ -42,17 +67,20 @@ namespace DR_TestClient.Network
                     }
                 }
 
-                using (var cts = new CancellationTokenSource(timeoutMs))
+                // Timeout → vẫn gọi callback với default (để caller xử lý qua mã code trong data)
+                pending.Timer = new Timer(_ =>
                 {
-                    cts.Token.Register(() => tcs.TrySetResult(null));
-                    object result = await tcs.Task;
-                    return result == null ? default : (TResponse)result;
-                }
+                    if (_pendings.TryRemove(tag, out var timedOut))
+                        timedOut.Fail();
+                }, null, timeoutMs, Timeout.Infinite);
             }
-            finally
+            catch
             {
-                _pending.TryRemove(tag, out _);
-                _responseTypes.TryRemove(tag, out _);
+                // Gửi ngay bị lỗi → gọi callback với default luôn
+                if (_pendings.TryRemove(tag, out var p))
+                    p.Fail();
+                else
+                    callback(default(TResponse));
             }
         }
 
@@ -60,16 +88,72 @@ namespace DR_TestClient.Network
         {
             using (var msg = e.GetMessage())
             {
-                if (!_pending.TryGetValue(msg.Tag, out var tcs)) return;
-                if (!_responseTypes.TryGetValue(msg.Tag, out var responseType)) return;
+                if (!_pendings.TryRemove(msg.Tag, out var pending)) return;
 
-                using (var reader = msg.GetReader())
+                pending.CancelTimeout();
+
+                try
                 {
-                    int len = reader.ReadInt32();
-                    byte[] payload = reader.ReadBytes();
-                    object response = MessagePackSerializer.Deserialize(responseType, payload.AsSpan(0, len).ToArray(), ContractlessStandardResolver.Options);
-                    tcs.TrySetResult(response);
+                    using (var reader = msg.GetReader())
+                    {
+                        int len = reader.ReadInt32();
+                        byte[] payload = reader.ReadBytes();
+                        pending.Complete(payload, 0, len);
+                    }
                 }
+                catch
+                {
+                    // Deserialize lỗi → vẫn trả về callback (với default)
+                    pending.Fail();
+                }
+            }
+        }
+
+        private interface IPending
+        {
+            void Complete(byte[] payload, int offset, int length);
+            void Fail();
+            void CancelTimeout();
+        }
+
+        private class Pending<TResponse> : IPending
+        {
+            public Action<TResponse> Callback;
+            public Timer Timer;
+
+            public void Complete(byte[] payload, int offset, int length)
+            {
+                Timer?.Dispose();
+                Timer = null;
+
+                TResponse result;
+                try
+                {
+                    var obj = MessagePackSerializer.Deserialize(
+                        typeof(TResponse),
+                        payload.AsSpan(offset, length).ToArray(),
+                        ContractlessStandardResolver.Options);
+                    result = (TResponse)obj;
+                }
+                catch
+                {
+                    result = default(TResponse);
+                }
+
+                Callback?.Invoke(result);
+            }
+
+            public void Fail()
+            {
+                Timer?.Dispose();
+                Timer = null;
+                Callback?.Invoke(default(TResponse));
+            }
+
+            public void CancelTimeout()
+            {
+                Timer?.Dispose();
+                Timer = null;
             }
         }
     }

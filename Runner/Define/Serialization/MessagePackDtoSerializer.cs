@@ -3,7 +3,7 @@ using MessagePack.Resolvers;
 using System;
 using System.Buffers;
 
-namespace DR.Common.Serialization
+namespace Define.Serialization
 {
     public class MessagePackDtoSerializer
     {

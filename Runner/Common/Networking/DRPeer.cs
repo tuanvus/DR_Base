@@ -1,6 +1,6 @@
 using DarkRift;
 using DarkRift.Server;
-using DR.Common.Serialization;
+using Define.Serialization;
 using System;
 
 namespace DR.Common.Networking

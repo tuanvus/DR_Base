@@ -104,11 +104,16 @@
     <Compile Include="OperationHandler\OperationHandler.cs" />
     <Compile Include="OperationHandler\OperationHandlerRegistry.cs" />
     <Compile Include="OperationHandler\PacketProcessor.cs" />
-    <Compile Include="Serialization\MessagePackDtoSerializer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Define\DR.Define.csproj">
+      <Project>{f0b77752-4edf-8d34-ba05-84b96af97d5a}</Project>
+      <Name>DR.Define</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

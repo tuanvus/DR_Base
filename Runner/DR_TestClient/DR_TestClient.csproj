@@ -36,6 +36,18 @@
     <Reference Include="DarkRift.Client">
       <HintPath>..\..\DR_Client\Assets\DarkRift\DarkRift\Plugins\Client\DarkRift.Client.dll</HintPath>
     </Reference>
+    <Reference Include="DR.Define, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Dll\DR.Define.dll</HintPath>
+    </Reference>
+    <Reference Include="DR.Dto, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Dll\DR.Dto.dll</HintPath>
+    </Reference>
+    <Reference Include="Enum, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Dll\Enum.dll</HintPath>
+    </Reference>
     <Reference Include="MessagePack, Version=3.1.4.0, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL">
       <HintPath>..\packages\MessagePack.3.1.4\lib\net472\MessagePack.dll</HintPath>
     </Reference>
@@ -46,6 +58,10 @@
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Share, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Dll\Share.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -69,7 +85,6 @@
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
-    <Reference Include="Dll\**\*.dll" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NetworkClient.cs" />
@@ -82,16 +97,6 @@
     <Compile Include="SerializationGeneration\Formatters.MessagePack.GeneratedMessagePackResolver.DR.Dto.DemoPingRequestDtoFormatter.g.cs" />
     <Compile Include="SerializationGeneration\Formatters.MessagePack.GeneratedMessagePackResolver.DR.Dto.DemoPingResponseDtoFormatter.g.cs" />
     <Compile Include="SerializationGeneration\MessagePack.GeneratedMessagePackResolver.g.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Common\DR.Common.csproj">
-      <Project>{a1b502a1-f06a-4429-a961-f85f1b6dd3d0}</Project>
-      <Name>DR.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Define\DR.Define.csproj">
-      <Project>{f0b77752-4edf-8d34-ba05-84b96af97d5a}</Project>
-      <Name>DR.Define</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Dll\DR.Define.dll" />

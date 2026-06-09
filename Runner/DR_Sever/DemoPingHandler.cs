@@ -36,7 +36,7 @@ namespace DR_Sever
             return new DemoPingResponseDto
             {
                 Success = true,
-                Reply = $"PONG: {incomingMessage}",
+                Reply = $"Send to sever api : ",
                 ServerTicksUtc = DateTime.UtcNow.Ticks
             };
         }

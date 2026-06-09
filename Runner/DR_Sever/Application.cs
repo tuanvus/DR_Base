@@ -2,7 +2,7 @@ using DarkRift;
 using DarkRift.Server;
 using DR.Common.Networking;
 using DR.Common.OperationHandler;
-using DR.Common.Serialization;
+using Define.Serialization;
 using MessagePack;
 using PZC.Log4Net;
 using System;

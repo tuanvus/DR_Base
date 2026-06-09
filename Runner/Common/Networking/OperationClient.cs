@@ -1,4 +1,4 @@
-using DR.Common.Serialization;
+using Define.Serialization;
 using MessagePack;
 using System;
 using System.Collections.Concurrent;
