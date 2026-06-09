@@ -10,19 +10,29 @@ namespace DR.Common.Serialization
         private static MessagePackDtoSerializer instance;
         public static MessagePackDtoSerializer Instance => instance ?? (instance = new MessagePackDtoSerializer());
 
-        private readonly MessagePackSerializerOptions options;
+        private MessagePackSerializerOptions options;
+        private bool isInitialized = false;
 
         private MessagePackDtoSerializer()
         {
-            StaticCompositeResolver.Instance.Register(
-                StandardResolver.Instance
-            );
-
             options = MessagePackSerializerOptions.Standard
-                .WithResolver(StaticCompositeResolver.Instance)
                 .WithCompression(MessagePackCompression.Lz4BlockArray);
-
             MessagePackSerializer.DefaultOptions = options;
+        }
+
+        public void Initialize(params IFormatterResolver[] customResolvers)
+        {
+            if (isInitialized) return;
+            
+            var resolvers = new System.Collections.Generic.List<IFormatterResolver>(customResolvers);
+            resolvers.Add(StandardResolver.Instance);
+            
+            StaticCompositeResolver.Instance.Register(resolvers.ToArray());
+            
+            options = options.WithResolver(StaticCompositeResolver.Instance);
+            MessagePackSerializer.DefaultOptions = options;
+            
+            isInitialized = true;
         }
 
         public byte[] Serialize<T>(T data, bool contractless = false)

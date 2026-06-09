@@ -39,12 +39,10 @@ partial class GeneratedMessagePackResolver : MsgPack::IFormatterResolver
 
 	private static class GeneratedMessagePackResolverGetFormatterHelper
 	{
-		private static readonly global::System.Collections.Generic.Dictionary<global::System.Type, int> closedTypeLookup = new global::System.Collections.Generic.Dictionary<global::System.Type, int>(4)
+		private static readonly global::System.Collections.Generic.Dictionary<global::System.Type, int> closedTypeLookup = new global::System.Collections.Generic.Dictionary<global::System.Type, int>(2)
 		{
-			{ typeof(global::Define.UserLogin), 0 },
-			{ typeof(global::Define.UserLoginResponse), 1 },
-			{ typeof(global::DR.Define.Dmge), 2 },
-			{ typeof(global::DR.Define.ErrorResponse), 3 },
+			{ typeof(global::DR.Dto.DemoPingRequestDto), 0 },
+			{ typeof(global::DR.Dto.DemoPingResponseDto), 1 },
 		};
 
 		internal static object GetFormatter(global::System.Type t)
@@ -53,10 +51,8 @@ partial class GeneratedMessagePackResolver : MsgPack::IFormatterResolver
 			{
 				switch (closedKey)
 				{
-					case 0: return new global::MessagePack.GeneratedMessagePackResolver.Define.UserLoginFormatter();
-					case 1: return new global::MessagePack.GeneratedMessagePackResolver.Define.UserLoginResponseFormatter();
-					case 2: return new global::MessagePack.GeneratedMessagePackResolver.DR.Define.DmgeFormatter();
-					case 3: return new global::MessagePack.GeneratedMessagePackResolver.DR.Define.ErrorResponseFormatter();
+					case 0: return new global::MessagePack.GeneratedMessagePackResolver.DR.Dto.DemoPingRequestDtoFormatter();
+					case 1: return new global::MessagePack.GeneratedMessagePackResolver.DR.Dto.DemoPingResponseDtoFormatter();
 					default: return null; // unreachable
 				};
 			}

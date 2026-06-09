@@ -122,6 +122,9 @@
       <Project>{f0b77752-4edf-8d34-ba05-84b96af97d5a}</Project>
       <Name>DR.Define</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Dto\DR.Dto.csproj">
+      <Name>DR.Dto</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

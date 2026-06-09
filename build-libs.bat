@@ -29,8 +29,16 @@ if errorlevel 1 goto :error
 echo.
 echo ========================================
 echo   All libraries built successfully!
-echo   Output: Runner\*\bin\Release\*.dll
+echo   Copying DLLs to TestClient Dll...
 echo ========================================
+if not exist "%SOLUTION_DIR%Runner\DR_TestClient\Dll\" mkdir "%SOLUTION_DIR%Runner\DR_TestClient\Dll\"
+
+copy /Y "%SOLUTION_DIR%Runner\Define\bin\Release\netstandard2.0\DR.Define.dll" "%SOLUTION_DIR%Runner\DR_TestClient\Dll\"
+copy /Y "%SOLUTION_DIR%Runner\Dto\bin\Release\netstandard2.0\DR.Dto.dll" "%SOLUTION_DIR%Runner\DR_TestClient\Dll\"
+copy /Y "%SOLUTION_DIR%Runner\Enum\bin\Release\Enum.dll" "%SOLUTION_DIR%Runner\DR_TestClient\Dll\"
+copy /Y "%SOLUTION_DIR%Runner\Share\bin\Release\Share.dll" "%SOLUTION_DIR%Runner\DR_TestClient\Dll\"
+
+echo Done copying DLLs!
 goto :end
 
 :error

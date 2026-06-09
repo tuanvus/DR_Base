@@ -17,6 +17,8 @@ namespace DR_Sever
         private readonly OperationHandlerRegistry _handlerRegistry;
         private readonly PacketProcessor _packetProcessor;
 
+        private System.Threading.Timer _snapshotTimer;
+
         public Application(PluginLoadData pluginLoadData) : base(pluginLoadData)
         {
             _handlerRegistry = new OperationHandlerRegistry();
@@ -25,6 +27,9 @@ namespace DR_Sever
             PZC.Log.LogManager.Initialize(new Log4NetFactory());
             ApplicationLogger.Initialize();
 
+            // Khởi tạo Serializer dùng chung cho toàn hệ thống
+            MessagePackDtoSerializer.Instance.Initialize();
+
             ApplicationLogger.Info("=== DarkRift Server Plugin Loading ===");
             ApplicationLogger.Info($"Plugin Version: {Version}");
 
@@ -32,6 +37,25 @@ namespace DR_Sever
 
             ClientManager.ClientConnected += OnClientConnected;
             ClientManager.ClientDisconnected += OnClientDisConnected;
+
+            _snapshotTimer = new System.Threading.Timer(OnSnapshotTimerTick, null, 3000, 3000);
+        }
+
+        private void OnSnapshotTimerTick(object state)
+        {
+            foreach (var cp in ClientPeerManager.Instance.GetAllPeers())
+            {
+                SendSnapshotDemo(cp.Peer);
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (disposing)
+            {
+                _snapshotTimer?.Dispose();
+            }
         }
 
         private void RegisterOperationHandlers()
@@ -55,14 +79,14 @@ namespace DR_Sever
         {
             if (peer == null) return;
 
-            var snapshot = new DemoPingResponse
+            var snapshot = new DR.Dto.DemoPingResponseDto
             {
                 Success = true,
                 Reply = "Hello from server snapshot!",
                 ServerTicksUtc = DateTime.UtcNow.Ticks
             };
 
-            byte[] payload = MessagePackSerializer.Serialize(snapshot, MessagePack.Resolvers.ContractlessStandardResolver.Options);
+            byte[] payload = MessagePackDtoSerializer.Instance.Serialize(snapshot);
             peer.SendMessagePack(20001, payload);
             ApplicationLogger.Info($"Sent SnapshotDemo to client {peer.Id}");
         }

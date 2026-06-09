@@ -69,12 +69,19 @@
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="Dll\**\*.dll" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="NetworkClient.cs" />
     <Compile Include="Network\ClientOperationClient.cs" />
     <Compile Include="Network\ClientSnapshotClient.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="SerializationGeneration\DR.Dto.GeneratedMessagePackResolver.g.cs" />
+    <Compile Include="SerializationGeneration\Formatters.DR.Dto.DemoPingRequestDtoFormatter.g.cs" />
+    <Compile Include="SerializationGeneration\Formatters.DR.Dto.DemoPingResponseDtoFormatter.g.cs" />
+    <Compile Include="SerializationGeneration\Formatters.MessagePack.GeneratedMessagePackResolver.DR.Dto.DemoPingRequestDtoFormatter.g.cs" />
+    <Compile Include="SerializationGeneration\Formatters.MessagePack.GeneratedMessagePackResolver.DR.Dto.DemoPingResponseDtoFormatter.g.cs" />
+    <Compile Include="SerializationGeneration\MessagePack.GeneratedMessagePackResolver.g.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\DR.Common.csproj">
@@ -85,13 +92,12 @@
       <Project>{f0b77752-4edf-8d34-ba05-84b96af97d5a}</Project>
       <Name>DR.Define</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DR_Sever\DR_Game.csproj">
-      <Project>{5937722b-4711-4139-9ba1-a3fddaa712ff}</Project>
-      <Name>DR_Game</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="SerializationGeneration\" />
+    <Content Include="Dll\DR.Define.dll" />
+    <Content Include="Dll\DR.Dto.dll" />
+    <Content Include="Dll\Enum.dll" />
+    <Content Include="Dll\Share.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

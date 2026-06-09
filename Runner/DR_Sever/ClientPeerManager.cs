@@ -1,4 +1,4 @@
-﻿using DarkRift.Server;
+using DarkRift.Server;
 using DarkRift;
 using System;
 using System.Collections.Concurrent;
@@ -59,6 +59,11 @@ namespace DR_Sever
             {
                 clientPeer.SendMessage(tag, data, mode);
             }
+        }
+
+        public System.Collections.Generic.IEnumerable<ClientPeer> GetAllPeers()
+        {
+            return _peers.Values;
         }
     }
 }
