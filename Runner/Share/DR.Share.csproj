@@ -79,6 +79,19 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common\DR.Common.csproj">
+      <Project>{A1B502A1-F06A-4429-A961-F85F1B6DD3D0}</Project>
+      <Name>DR.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Define\DR.Define.csproj">
+      <Project>{f0b77752-4edf-8d34-ba05-84b96af97d5a}</Project>
+      <Name>DR.Define</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Dto\DR.Dto.csproj">
+      <Name>DR.Dto</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>

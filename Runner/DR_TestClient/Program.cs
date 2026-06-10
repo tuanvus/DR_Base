@@ -53,7 +53,7 @@ namespace DR_TestClient
                 var opClient = new Network.ClientOperationClient(client);
                 opClient.SendAsync<DR.Dto.DemoPingRequestDto, DR.Dto.DemoPingResponseDto>(
                     tag: 10001,
-                    request: new DR.Dto.DemoPingRequestDto { Message = " send to client" },
+                    request: new DR.Dto.DemoPingRequestDto { Message = " send to test" },
                     callback: res =>
                     {
                         Console.WriteLine($"API Result: {res?.Reply}");

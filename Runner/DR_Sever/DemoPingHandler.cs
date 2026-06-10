@@ -24,19 +24,19 @@ namespace DR_Sever
         {
             string incomingMessage = request?.Message ?? string.Empty;
 
-            try
-            {
-                LOG.Info($"DemoPingHandler received message: {incomingMessage}");
-            }
-            catch
-            {
-                // Keep request handling alive even if logger setup is broken.
-            }
+            //try
+            //{
+            //    LOG.Info($"DemoPingHandler received message: {incomingMessage}");
+            //}
+            //catch
+            //{
+            //    // Keep request handling alive even if logger setup is broken.
+            //}
 
             return new DemoPingResponseDto
             {
                 Success = true,
-                Reply = $"Send to sever api : ",
+                Reply = $"  send test: ",
                 ServerTicksUtc = DateTime.UtcNow.Ticks
             };
         }

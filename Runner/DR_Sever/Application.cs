@@ -139,7 +139,7 @@ namespace DR_Sever
                     object requestData = MessagePackDtoSerializer.Instance.Deserialize(requestType, payload, 0, payloadLength, contractless: true);
                     ApplicationLogger.Info($"Client {peer.Id} -> Server tag={message.Tag}, payload={ApplicationUtility.FormatPayload(requestData)}");
 
-                    object response = _packetProcessor.ProcessPacket(peer, message.Tag, requestData);
+                    object response = _packetProcessor.ProcessPacket(handler, requestData);
                     if (peer != null && response != null)
                     {
                         ApplicationLogger.Info($"Server -> Client {peer.Id} tag={message.Tag}, payload={ApplicationUtility.FormatPayload(response)}");

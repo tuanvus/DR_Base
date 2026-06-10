@@ -13,7 +13,7 @@ namespace DR.Common.OperationHandler
     public class OperationHandlerRegistry
     {
         private readonly Dictionary<ushort, Type> _handlers = new Dictionary<ushort, Type>();
-        private readonly Dictionary<ushort, object> _handlerInstances = new Dictionary<ushort, object>();
+        private readonly Dictionary<ushort, IOperationHandler> _handlerInstances = new Dictionary<ushort, IOperationHandler>();
 
         /// <summary>
         /// Register all handlers from the given assemblies.
@@ -53,7 +53,7 @@ namespace DR.Common.OperationHandler
             Console.WriteLine($"Total handlers registered: {_handlers.Count}\n");
         }
 
-        public object GetHandler(ushort operationCode)
+        public IOperationHandler GetHandler(ushort operationCode)
         {
             if (!_handlers.TryGetValue(operationCode, out var handlerType))
             {
@@ -64,14 +64,15 @@ namespace DR.Common.OperationHandler
             // For stateful or per-request, replace with a factory later.
             if (!_handlerInstances.TryGetValue(operationCode, out var instance))
             {
-                instance = Activator.CreateInstance(handlerType);
+                var created = Activator.CreateInstance(handlerType);
+                instance = (IOperationHandler)created;
                 _handlerInstances[operationCode] = instance;
             }
 
             return instance;
         }
 
-        public bool TryGetHandler(ushort operationCode, out object handler)
+        public bool TryGetHandler(ushort operationCode, out IOperationHandler handler)
         {
             handler = null;
 

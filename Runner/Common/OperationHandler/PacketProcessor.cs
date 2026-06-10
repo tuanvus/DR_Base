@@ -1,6 +1,4 @@
-﻿using DR.Common.Networking;
-using System;
-using System.Reflection;
+﻿using System;
 
 namespace DR.Common.OperationHandler
 {
@@ -18,14 +16,42 @@ namespace DR.Common.OperationHandler
         }
 
         /// <summary>
-        /// Process an incoming packet.
+        /// Process a request using an already resolved <see cref="IOperationHandler"/>.
+        /// Preferred overload when you have already obtained the handler (e.g. to inspect its generic
+        /// arguments for deserialization of the request DTO).
         /// </summary>
-        /// <param name="peer">The DRPeer that sent the message (used for sending response if needed).</param>
-        /// <param name="operationCode">The opcode that identifies which handler to use.</param>
-        /// <param name="requestData">The already deserialized request object (e.g. via MessagePack).</param>
-        /// <param name="responseOpCode">Optional: the opcode to use when sending the response back. If null, caller is responsible for sending.</param>
-        /// <returns>The response object returned by the handler (can be null).</returns>
-        public object ProcessPacket(DRPeer peer, ushort operationCode, object requestData, ushort? responseOpCode = null)
+        public object ProcessPacket(IOperationHandler handler, object requestData)
+        {
+            if (handler == null)
+            {
+                Console.WriteLine("[ERROR] Handler is null.");
+                return null;
+            }
+
+            try
+            {
+                // Direct call through the interface — no reflection on the hot path.
+                return handler.Handle(requestData);
+            }
+            catch (Exception ex)
+            {
+                if (ex is System.Reflection.TargetInvocationException tie)
+                {
+                    Console.WriteLine($"[ERROR] Handler threw: {tie.InnerException?.Message}");
+                    throw tie.InnerException ?? tie;
+                }
+
+                Console.WriteLine($"[ERROR] Handler threw: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Process an incoming packet by opcode (convenience overload).
+        /// Performs an internal lookup via the registry, then delegates to the <see cref="IOperationHandler"/> overload.
+        /// Use the <see cref="ProcessPacket(IOperationHandler, object)"/> overload when you already have the handler instance.
+        /// </summary>
+        public object ProcessPacket(ushort operationCode, object requestData)
         {
             if (!_registry.TryGetHandler(operationCode, out var handler))
             {
@@ -33,31 +59,7 @@ namespace DR.Common.OperationHandler
                 return null;
             }
 
-            // Get the Handle method - after our fix it should be Handle(TRequest)
-            var handleMethod = handler.GetType()
-                .GetMethod("Handle", BindingFlags.Public | BindingFlags.Instance);
-
-            if (handleMethod == null)
-            {
-                Console.WriteLine($"[ERROR] Handler {handler.GetType().Name} has no public Handle method.");
-                return null;
-            }
-
-            object response = null;
-            try
-            {
-                // Correct invocation: only the request
-                response = handleMethod.Invoke(handler, new[] { requestData });
-            }
-            catch (TargetInvocationException ex)
-            {
-                Console.WriteLine($"[ERROR] Handler threw: {ex.InnerException?.Message}");
-                throw ex.InnerException ?? ex;
-            }
-
-            return response;
+            return ProcessPacket(handler, requestData);
         }
-
-  
     }
 }
